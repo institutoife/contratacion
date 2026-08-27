@@ -75,6 +75,28 @@ class ApplicantIndexTest extends TestCase
         ]);
         $first->forceFill(['created_at' => '2026-08-27 09:00:00'])->saveQuietly();
 
+        ApplicantInterview::query()->create([
+            'applicant_id' => $first->id,
+            'interview_date' => '2026-09-15',
+            'interview_time' => '09:00:00',
+        ]);
+        ApplicantInterview::query()->create([
+            'applicant_id' => $second->id,
+            'interview_date' => '2026-09-15',
+            'interview_time' => '09:30:00',
+        ]);
+
+        $differentDate = Applicant::query()->create([
+            'position_id' => $position->id,
+            'full_name' => 'Otra fecha',
+            'status' => 'Nuevo',
+        ]);
+        ApplicantInterview::query()->create([
+            'applicant_id' => $differentDate->id,
+            'interview_date' => '2026-09-16',
+            'interview_time' => '09:00:00',
+        ]);
+
         $pdf = Mockery::mock();
         $pdf->shouldReceive('loadView')
             ->once()
@@ -84,7 +106,9 @@ class ApplicantIndexTest extends TestCase
                     ->pluck('full_name')
                     ->all();
 
-                return $names === ['Primer registro', 'Segundo registro'];
+                return $names === ['Primer registro', 'Segundo registro']
+                    && $payload['totalApplicants'] === 2
+                    && $payload['interviewDate'] === '2026-09-15';
             }))
             ->andReturnSelf();
         $pdf->shouldReceive('setPaper')
@@ -93,12 +117,25 @@ class ApplicantIndexTest extends TestCase
             ->andReturnSelf();
         $pdf->shouldReceive('stream')
             ->once()
-            ->with(Mockery::pattern('/^reporte-postulantes-por-cargo-\d{8}-\d{6}\.pdf$/'))
+            ->with(Mockery::pattern('/^reporte-postulantes-por-cargo-2026-09-15-\d{6}\.pdf$/'))
             ->andReturn(response('pdf', 200, ['Content-Type' => 'application/pdf']));
         $this->app->instance('dompdf.wrapper', $pdf);
 
-        $response = $this->actingAs($user)->get(route('applicants.position-report'));
+        $response = $this->actingAs($user)->get(route('applicants.position-report', [
+            'interview_date' => '2026-09-15',
+        ]));
 
         $response->assertOk();
+    }
+
+    public function test_position_report_requires_an_interview_date(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('applicants.position-report'));
+
+        $response
+            ->assertRedirect()
+            ->assertSessionHasErrors('interview_date');
     }
 }

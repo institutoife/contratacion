@@ -232,7 +232,7 @@
             <td class="header-copy">
                 <div class="document-type">Gestión de talento humano</div>
                 <h1 class="title">Postulantes por cargo</h1>
-                <div class="subtitle">Orden de atención para entrevistas</div>
+                <div class="subtitle">Entrevistas programadas para el {{ $interviewDateLabel }}</div>
             </td>
             <td class="report-meta">
                 <strong>{{ $reportCode }}</strong><br>
@@ -252,8 +252,8 @@
                 <span class="summary-label">CARGOS CON<br>POSTULANTES</span>
             </td>
             <td>
-                <span class="summary-number">1</span>
-                <span class="summary-label">PRIORIDAD MÁS<br>ALTA POR CARGO</span>
+                <span class="summary-number">{{ $interviewDateLabel }}</span>
+                <span class="summary-label">FECHA DE<br>ENTREVISTA</span>
             </td>
         </tr>
     </table>
@@ -304,7 +304,7 @@
             </table>
         </div>
     @empty
-        <div class="empty-state">No hay postulantes registrados.</div>
+        <div class="empty-state">No hay postulantes con entrevista programada para el {{ $interviewDateLabel }}.</div>
     @endforelse
 </body>
 </html>

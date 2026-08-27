@@ -26,7 +26,7 @@
             </div>
             <div class="page-actions">
                 <a href="{{ route('applicants.export', request()->query()) }}" class="btn btn-outline-secondary">Exportar CSV</a>
-                <a href="{{ route('applicants.position-report') }}" class="btn btn-outline-primary" target="_blank" rel="noopener">Reporte por cargos</a>
+                <button type="button" class="btn btn-outline-primary" id="open-position-report">Reporte por cargos</button>
                 <a href="{{ route('applicants.create') }}" class="btn btn-primary">Nuevo postulante</a>
             </div>
         </header>
@@ -323,4 +323,51 @@
             </div>
         </details>
     </div>
+
+    <dialog class="report-dialog" id="position-report-dialog" aria-labelledby="position-report-title">
+        <div class="report-dialog-head">
+            <h2 id="position-report-title">Reporte por fecha de entrevista</h2>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="close-position-report">Cerrar</button>
+        </div>
+        <form method="GET" action="{{ route('applicants.position-report') }}" target="_blank" id="position-report-form">
+            <div class="report-dialog-body">
+                <label for="report-interview-date">Fecha de entrevista</label>
+                <input id="report-interview-date" type="date" name="interview_date" class="form-control" required>
+            </div>
+            <div class="report-dialog-actions">
+                <button type="button" class="btn btn-outline-secondary" id="cancel-position-report">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Generar PDF</button>
+            </div>
+        </form>
+    </dialog>
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const dialog = document.getElementById('position-report-dialog');
+            const openButton = document.getElementById('open-position-report');
+            const closeButtons = [
+                document.getElementById('close-position-report'),
+                document.getElementById('cancel-position-report'),
+            ];
+            const reportForm = document.getElementById('position-report-form');
+
+            openButton.addEventListener('click', function () {
+                dialog.showModal();
+            });
+
+            closeButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    dialog.close();
+                });
+            });
+
+            reportForm.addEventListener('submit', function () {
+                window.setTimeout(function () {
+                    dialog.close();
+                }, 100);
+            });
+        })();
+    </script>
+@endpush

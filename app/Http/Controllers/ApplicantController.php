@@ -165,15 +165,26 @@ class ApplicantController extends Controller
         return response()->view('pdf.interview-slot-report', $payload);
     }
 
-    public function positionReportPdf(): HttpResponse
+    public function positionReportPdf(Request $request): HttpResponse
     {
+        $validated = $request->validate([
+            'interview_date' => ['required', 'date_format:Y-m-d'],
+        ], [
+            'interview_date.required' => 'Selecciona una fecha de entrevista.',
+            'interview_date.date_format' => 'La fecha de entrevista no tiene un formato válido.',
+        ]);
+        $interviewDate = $validated['interview_date'];
+
         $applicants = Applicant::query()
             ->with([
                 'position',
                 'interviews' => fn ($query) => $query
+                    ->whereDate('interview_date', $interviewDate)
                     ->orderBy('interview_date')
                     ->orderBy('interview_time'),
             ])
+            ->whereHas('interviews', fn ($query) => $query
+                ->whereDate('interview_date', $interviewDate))
             ->orderBy('created_at')
             ->orderBy('id')
             ->get();
@@ -187,6 +198,8 @@ class ApplicantController extends Controller
             'groupedByPosition' => $groupedByPosition,
             'totalApplicants' => $applicants->count(),
             'totalPositions' => $groupedByPosition->count(),
+            'interviewDate' => $interviewDate,
+            'interviewDateLabel' => date('d/m/Y', strtotime($interviewDate)),
         ];
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
@@ -194,7 +207,7 @@ class ApplicantController extends Controller
             $pdf->loadView('pdf.applicants-by-position-report', $payload)
                 ->setPaper('letter', 'landscape');
 
-            $filename = 'reporte-postulantes-por-cargo-' . now()->format('Ymd-His') . '.pdf';
+            $filename = 'reporte-postulantes-por-cargo-' . $interviewDate . '-' . now()->format('His') . '.pdf';
 
             return $pdf->stream($filename);
         }
