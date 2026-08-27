@@ -31,7 +31,7 @@
         @endif
     </div>
     <div class="col-md-6">
-        <label class="form-label" for="{{ $prefix }}_gender">Genero</label>
+        <label class="form-label" for="{{ $prefix }}_gender">Género</label>
         <select id="{{ $prefix }}_gender" name="gender" class="form-select @if($showFieldErrors && $errors->has('gender')) is-invalid @endif">
             <option value="">Seleccionar</option>
             <option value="hombre" @selected(old('gender') === 'hombre')>Hombre</option>
@@ -62,7 +62,7 @@
         @endif
     </div>
     <div class="col-12">
-        <label class="form-label" for="{{ $prefix }}_address">Direccion</label>
+        <label class="form-label" for="{{ $prefix }}_address">Dirección</label>
         <input type="text" id="{{ $prefix }}_address" name="address" class="form-control @if($showFieldErrors && $errors->has('address')) is-invalid @endif" value="{{ old('address') }}">
         @if($showFieldErrors)
             @error('address')
@@ -71,7 +71,7 @@
         @endif
     </div>
     <div class="col-md-6">
-        <label class="form-label" for="{{ $prefix }}_primary_phone">Telefono</label>
+        <label class="form-label" for="{{ $prefix }}_primary_phone">Teléfono</label>
         <input type="text" id="{{ $prefix }}_primary_phone" name="primary_phone" class="form-control @if($showFieldErrors && $errors->has('primary_phone')) is-invalid @endif" value="{{ old('primary_phone') }}">
         @if($showFieldErrors)
             @error('primary_phone')
@@ -80,7 +80,7 @@
         @endif
     </div>
     <div class="col-md-6">
-        <label class="form-label" for="{{ $prefix }}_reference_phone">Telefono referencia</label>
+        <label class="form-label" for="{{ $prefix }}_reference_phone">Teléfono de referencia</label>
         <input type="text" id="{{ $prefix }}_reference_phone" name="reference_phone" class="form-control @if($showFieldErrors && $errors->has('reference_phone')) is-invalid @endif" value="{{ old('reference_phone') }}">
         @if($showFieldErrors)
             @error('reference_phone')
@@ -89,7 +89,7 @@
         @endif
     </div>
     <div class="col-12">
-        <label class="form-label" for="{{ $prefix }}_motivation_text">Por que te gustaria trabajar con nosotros</label>
+        <label class="form-label" for="{{ $prefix }}_motivation_text">¿Por qué te gustaría trabajar con nosotros?</label>
         <textarea id="{{ $prefix }}_motivation_text" name="motivation_text" class="form-control @if($showFieldErrors && $errors->has('motivation_text')) is-invalid @endif" rows="4">{{ old('motivation_text') }}</textarea>
         @if($showFieldErrors)
             @error('motivation_text')
