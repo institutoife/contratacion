@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Applicant;
 use App\Models\ApplicantAttachment;
+use App\Models\ApplicantInterview;
 use App\Models\InterviewSlot;
 use App\Models\Position;
 use Illuminate\Http\Request;
@@ -20,14 +21,22 @@ class ApplicantController extends Controller
         $query = Applicant::query()->with('position')->latest();
         $this->applyFilters($query, $request);
 
+        $interviewSlots = InterviewSlot::query()
+            ->addSelect([
+                'bookings_count' => ApplicantInterview::query()
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('interview_date', 'interview_slots.interview_date')
+                    ->whereColumn('interview_time', 'interview_slots.interview_time'),
+            ])
+            ->orderByDesc('interview_date')
+            ->orderByDesc('interview_time')
+            ->paginate(10, ['*'], 'slots_page')
+            ->withQueryString();
+
         return view('applicants.index', [
             'applicants' => $query->paginate(15)->withQueryString(),
             'positions' => Position::query()->orderBy('name')->get(),
-            'interviewSlots' => InterviewSlot::query()
-                ->orderByDesc('interview_date')
-                ->orderByDesc('interview_time')
-                ->paginate(10, ['*'], 'slots_page')
-                ->withQueryString(),
+            'interviewSlots' => $interviewSlots,
             'statuses' => Applicant::STATUSES,
             'ratings' => [1, 2, 3, 4, 5],
             'filters' => $request->all(),
@@ -146,7 +155,7 @@ class ApplicantController extends Controller
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = app('dompdf.wrapper');
             $pdf->loadView('pdf.interview-slot-report', $payload)
-                ->setPaper('letter');
+                ->setPaper('letter', 'landscape');
 
             $filename = 'reporte-horario-' . $interviewSlot->id . '.pdf';
 
@@ -154,6 +163,43 @@ class ApplicantController extends Controller
         }
 
         return response()->view('pdf.interview-slot-report', $payload);
+    }
+
+    public function positionReportPdf(): HttpResponse
+    {
+        $applicants = Applicant::query()
+            ->with([
+                'position',
+                'interviews' => fn ($query) => $query
+                    ->orderBy('interview_date')
+                    ->orderBy('interview_time'),
+            ])
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $groupedByPosition = $applicants
+            ->groupBy(fn (Applicant $applicant) => $applicant->position?->name ?: 'Sin cargo asignado')
+            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE);
+
+        $payload = [
+            'applicants' => $applicants,
+            'groupedByPosition' => $groupedByPosition,
+            'totalApplicants' => $applicants->count(),
+            'totalPositions' => $groupedByPosition->count(),
+        ];
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('pdf.applicants-by-position-report', $payload)
+                ->setPaper('letter', 'landscape');
+
+            $filename = 'reporte-postulantes-por-cargo-' . now()->format('Ymd-His') . '.pdf';
+
+            return $pdf->stream($filename);
+        }
+
+        return response()->view('pdf.applicants-by-position-report', $payload);
     }
 
     public function edit(Applicant $applicant)

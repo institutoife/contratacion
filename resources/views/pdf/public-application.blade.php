@@ -9,8 +9,9 @@
         .header { border: 1px solid #1f4b70; background: #eaf4ff; padding: 12px; margin-bottom: 12px; }
         .header-table { width: 100%; border-collapse: collapse; }
         .header-table td { border: none; vertical-align: middle; }
-        .logo-cell { width: 95px; }
-        .logo { width: 78px; height: auto; }
+        .logo-cell { width: 130px; }
+        .logo-frame { position: relative; width: 110px; height: 52px; overflow: hidden; }
+        .logo { position: absolute; top: -28px; left: -2px; width: 360px; height: auto; }
         .title { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
         .subtitle { color: #315a7c; font-size: 11px; }
         .section { border: 1px solid #b6cfdf; margin-top: 10px; }
@@ -25,7 +26,7 @@
 </head>
 <body>
     @php
-        $logoPath = public_path('images/logo.png');
+        $logoPath = public_path('images/logo-ife-educabol-ofical-instituto-de-formacion-educabol.png');
         $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
     @endphp
 
@@ -34,7 +35,9 @@
             <tr>
                 <td class="logo-cell">
                     @if($logoData)
-                        <img src="{{ $logoData }}" alt="Logo" class="logo">
+                        <div class="logo-frame">
+                            <img src="{{ $logoData }}" alt="IFE Educabol" class="logo">
+                        </div>
                     @else
                         <strong>LOGO</strong>
                     @endif

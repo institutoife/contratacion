@@ -22,6 +22,8 @@ Route::middleware('auth')->group(function (): void {
 
     Route::redirect('/panel', '/applicants');
 
+    Route::get('/reports/applicants-by-position', [ApplicantController::class, 'positionReportPdf'])
+        ->name('applicants.position-report');
     Route::resource('applicants', ApplicantController::class);
     Route::get('/applicants/{applicant}/print', [ApplicantController::class, 'printProfile'])->name('applicants.print');
     Route::patch('/applicants/{applicant}/quick-update', [ApplicantController::class, 'quickUpdate'])->name('applicants.quick-update');
